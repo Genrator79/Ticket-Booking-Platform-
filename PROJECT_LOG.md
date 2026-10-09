@@ -23,7 +23,7 @@
   - Implemented centralized Axios instance `client/src/services/api.ts` with base URL, timeout, request interceptor (Authorization bearer token injection), and response error normalizer.
   - Created `client/src/components/HealthStatus.tsx` probe component and updated `client/src/App.tsx` layout.
 
-### 2026-10-09 - Milestone M01: Verification & Testing
+### 2026-10-09 - Milestone M01: Verification & Git Remote Sync
 - **Milestone & Task**: M01 — Project Setup / Verification & Checks
 - **Action**:
   - Configured Jest + Supertest test suite in `server/tests/health.test.ts`. Tests passed 2/2 (Health check 200 OK + 404 handler).
@@ -32,6 +32,38 @@
   - Started Vite client on port 5173.
   - Executed browser subagent test: Verified live connection between React and Express via Axios, confirmed dynamic latency and memory metrics, and tested manual refresh action.
   - Documented SOLID principles in `docs/solid/SOLID.md` and created milestone summary in `docs/milestones/M01-project-setup.md`.
-  - Created initial Git commit `a14c456`: `feat(m01): project setup with monorepo, express api, vite client, health check, and tracking`.
-  - Configured remote origin `https://github.com/Genrator79/Ticket-Booking-Platform-.git` and pushed `main` branch upstream (`git push -u origin main`).
-- **Status**: M01 Complete and successfully pushed to GitHub. Awaiting approval to proceed to M02.
+  - Created initial Git commit `a14c456` and pushed to remote origin `https://github.com/Genrator79/Ticket-Booking-Platform-.git` on branch `main`.
+- **Status**: M01 Complete and successfully pushed to GitHub.
+
+### 2026-10-09 - Milestone M02: Database Design Initiated & Installed
+- **Milestone & Task**: M02 — Database Design / PostgreSQL Configuration
+- **Action**:
+  - Installed PostgreSQL 16 via Homebrew (`brew install postgresql@16`) and started the service (`brew services start postgresql@16`).
+  - Created local databases `ticket_booking` and `ticket_booking_test`.
+  - Installed `pg`, `bcryptjs`, and corresponding types.
+  - Implemented database connection pool `server/src/db/index.ts` with client pooling, slow query logging, connection verification, and `withTransaction` higher-order transaction helper.
+
+### 2026-10-09 - Milestone M02: Schema Migrations & Constraints
+- **Milestone & Task**: M02 — Database Design / Migration Creation
+- **Action**:
+  - Created 8 normalized migration files in `database/migrations/`:
+    - `001_create_users_table.sql`: Users table with `pgcrypto` UUIDs and unique email index.
+    - `002_create_movies_table.sql`: Movies catalog with title and genre indexes.
+    - `003_create_venues_and_screens_tables.sql`: Venues and auditorium screens with `UNIQUE(venue_id, name)`.
+    - `004_create_seats_table.sql`: Static physical seating layout per screen with `UNIQUE(screen_id, seat_label)`.
+    - `005_create_shows_table.sql`: Scheduled movie screenings with `CHECK (end_time > start_time)`.
+    - `006_create_show_seats_table.sql`: Per-show dynamic seat state with `UNIQUE(show_id, seat_id)`, `CHECK (status IN ('AVAILABLE', 'HELD', 'BOOKED'))`, optimistic `version`, and compound index `(show_id, status)`.
+    - `007_create_bookings_and_booking_seats_tables.sql`: Persistent bookings and itemized `booking_seats` records with `UNIQUE(booking_id, show_seat_id)`.
+    - `008_create_payments_table.sql`: Payments records linked to bookings with idempotency key support.
+  - Implemented migration runner `database/migrate.ts` with version tracking in `schema_migrations` and idempotent execution.
+
+### 2026-10-09 - Milestone M02: Seeding & Automated Verification
+- **Milestone & Task**: M02 — Database Design / Verification & Testing
+- **Action**:
+  - Implemented realistic seeder `database/seed/index.ts` populating 4 users (with bcrypt hashes), 4 movies, 2 venues, 3 screens, 150 physical seats, 4 shows, and 200 `show_seats` availability records.
+  - Added root npm scripts `db:migrate`, `db:seed`, and `db:reset`. Verified clean execution and idempotency.
+  - Created automated test suite `server/tests/db.test.ts` verifying table existence, foreign keys, `UNIQUE(show_id, seat_id)` constraint, status check constraint, and `withTransaction` commit/rollback behaviors.
+  - All 9 test cases in `db.test.ts` and `health.test.ts` passed (1.535s).
+  - Updated API health check endpoint and frontend `HealthStatus.tsx` to verify live database connectivity (`Database: CONNECTED`).
+  - Documented schema specifications in `docs/database/schema.md` and created `docs/milestones/M02-database-design.md`.
+- **Status**: M02 Complete. Awaiting user approval to proceed to M03.

@@ -1,8 +1,13 @@
 import request from 'supertest';
 import { createApp } from '../src/app';
+import { closePool } from '../src/db/index';
 
 describe('Health Check & Basic API Routing', () => {
   const app = createApp();
+
+  afterAll(async () => {
+    await closePool();
+  });
 
   it('GET /api/health should return 200 OK with system status', async () => {
     const res = await request(app).get('/api/health');

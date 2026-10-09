@@ -7,6 +7,7 @@ const envSchema = z.object({
   PORT: z.string().default('5001').transform((val) => parseInt(val, 10)),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CLIENT_URL: z.string().default('http://localhost:5173'),
+  DATABASE_URL: z.string().default('postgresql://localhost:5432/ticket_booking'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

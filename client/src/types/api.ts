@@ -8,6 +8,7 @@ export interface ApiResponse<T> {
 export interface HealthCheckData {
   status: string;
   service: string;
+  database?: string;
   timestamp: string;
   uptime: number;
   environment: string;
